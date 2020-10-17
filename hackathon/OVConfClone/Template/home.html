@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPT-Clone</title>
+</head>
+<body>
+    <h2>Welcome to Home Page</h2>
+    <h3>Connected to OV 10.1.19.142</h3>
+    <a href='{% url 'spt_details' %}'> SPT Details </a>
+    {{ spt_det }}
+</body>
+</html>
