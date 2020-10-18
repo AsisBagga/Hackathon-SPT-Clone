@@ -17,13 +17,12 @@ from hpeOneView.exceptions import HPEOneViewException
 4. system will request for 2nd OV Config details
 5. creates the SPT as completion. 
 '''
-def get_spt(config):
-    server_profile_name = "spt_minimal"
-    oneview_client = OneViewClient(config)
+def get_spt(oneview_client, config):
+    server_profile_name = config.source_SPT_name
     profile_templates = oneview_client.server_profile_templates
     template = oneview_client.server_profile_templates.get_by_name(server_profile_name)
     pprint(template.data)
-    return template
+    return template             
 
 def home(request):
     form  = ConfigForm()
@@ -31,11 +30,17 @@ def home(request):
         form = ConfigForm(request.POST)
         if form.is_valid():
             temp = form.save(commit=False)
-            get_spt_details(temp)
+            # get instance of the source OneView
+            oneview_client = client_connect(temp)
+            if oneview_client:
+                spt_data = get_spt(oneview_client, temp)
+                render(request, 'home.html', {'spt_data':spt_data})
+            else:
+                # if connection fails
+                return render(request, 'home.html', {'no_connection_response':f'OneView {temp.ip} is not reachable'})
     return render(request, 'home.html', {'form':form})
 
-def get_spt_details(form):
-    print("form => ",form.ov_name, " and ",form.ip)
+def client_connect(form):
     config = {
         "ip": form.ip,
         "credentials": {
@@ -44,6 +49,7 @@ def get_spt_details(form):
         },
         "api_version": form.api_version
     }
-    print("\n",config)
-    #det = get_spt(config)
-    return True# {'spt_det': det.data})
+    oneview_client = OneViewClient(config):
+    if oneview_client:
+        return oneview_client
+    return False

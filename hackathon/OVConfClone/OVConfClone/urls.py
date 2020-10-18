@@ -26,8 +26,7 @@ from SPTClone import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name="home"),
-    path('spt-details/', views.get_spt_details, name="spt_details"),
-]
+    path('spt-details/', views.get_spt_details, name="spt_details"),]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
