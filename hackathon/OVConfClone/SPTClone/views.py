@@ -21,7 +21,6 @@ def get_spt(oneview_client, config):
     server_profile_name = config.source_SPT_name
     profile_templates = oneview_client.server_profile_templates
     template = oneview_client.server_profile_templates.get_by_name(server_profile_name)
-    pprint(template.data)
     return template             
 
 def home(request):
@@ -34,7 +33,8 @@ def home(request):
             oneview_client = client_connect(temp)
             if oneview_client:
                 spt_data = get_spt(oneview_client, temp)
-                render(request, 'home.html', {'spt_data':spt_data})
+                print(spt_data.data)
+                return render(request, 'home.html', {'spt_data':spt_data.data, 'form':form})
             else:
                 # if connection fails
                 return render(request, 'home.html', {'no_connection_response':f'OneView {temp.ip} is not reachable'})
@@ -49,7 +49,7 @@ def client_connect(form):
         },
         "api_version": form.api_version
     }
-    oneview_client = OneViewClient(config):
+    oneview_client = OneViewClient(config)
     if oneview_client:
         return oneview_client
     return False
