@@ -21,7 +21,10 @@
     {% if spt_data  %}
     <h5>Source SPT Json Body</h5>
     <div class="container">
-          <pre>{{ spt_data | pprint }}</pre>
+          <pre>name </pre><pre>{{ spt_data.name | pprint }}</pre>
+          <pre>bios:</pre><pre>{{ spt_data.bios | pprint }}</pre>
+          <pre>boot: </pre><pre> {{ spt_data.boot | pprint }}</pre>
+          <pre>boot_mode: </pre><pre> {{ spt_data.bootMode | pprint }}</pre>
     </div>
 	{% else %}
          <div class="container" style="width: 40%; margin-top: 2%;">
