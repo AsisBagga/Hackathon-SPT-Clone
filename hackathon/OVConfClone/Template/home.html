@@ -18,18 +18,21 @@
     <div class="container" style="width: 30%;">
         <h5 style="color:crimson">{{ no_connection_response }}</h5>
     </div>
-    <div class="container" style="width: 40%; margin-top: 2%;">
-	{% if spt_data  %}
-          {{ spt_data | pprint }}
+    {% if spt_data  %}
+    <h5>Source SPT Json Body</h5>
+    <div class="container">
+          <pre>{{ spt_data | pprint }}</pre>
+    </div>
 	{% else %}
-          <h4 style="text-align: center;">Please update the Source OV Configuration</h4> <br>
-          <form method="post">
+         <div class="container" style="width: 40%; margin-top: 2%;">
+            <h4 style="text-align: center;">Please update the Source OV Configuration</h4> <br>
+            <form method="post">
               {% csrf_token %}
               {% bootstrap_form form %}
               <button class="btn btn-info" style="width: 50%; align-items: center;" type="submit">Connect</button>
-          </form>
+            </form>
+        </div>
 	{% endif  %}
-    </div>
     <hr>
 
 </body>
