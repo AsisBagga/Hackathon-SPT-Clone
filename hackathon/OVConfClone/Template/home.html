@@ -18,13 +18,16 @@
     <div class="container" style="width: 30%;">
         <h5 style="color:crimson">{{ no_connection_response }}</h5>
     </div>
-    {% if spt_data  %}
+    {% if SPT %}
     <h5>Source SPT Json Body</h5>
     <div class="container">
-          <pre>name </pre><pre>{{ spt_data.name | pprint }}</pre>
-          <pre>bios:</pre><pre>{{ spt_data.bios | pprint }}</pre>
-          <pre>boot: </pre><pre> {{ spt_data.boot | pprint }}</pre>
-          <pre>boot_mode: </pre><pre> {{ spt_data.bootMode | pprint }}</pre>
+          <pre>name </pre><pre>{{ SPT.spt_data.name | pprint }}</pre>
+          <pre>bios:</pre><pre>{{ SPT.spt_data.bios | pprint }}</pre>
+          <pre>boot: </pre><pre> {{ SPT.spt_data.boot | pprint }}</pre>
+          <pre>boot_mode: </pre><pre> {{ SPT.spt_data.bootMode | pprint }}</pre>
+	  <pre>Server Hardware Model: </pre><pre>{{ SPT.source_server_hardware_model }}</pre>
+	  <pre>Server Hardware Capabilities</pre><pre>{{ SPT.source_capabilities_list }}</pre>
+	  <a href="{% url 'destination_home' SPT_query.pk %}">Do you wish to clone this SPT to another oneview? </a>
     </div>
 	{% else %}
          <div class="container" style="width: 40%; margin-top: 2%;">

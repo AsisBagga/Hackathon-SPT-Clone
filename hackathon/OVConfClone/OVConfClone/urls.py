@@ -26,6 +26,7 @@ from SPTClone import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name="home"),
+    path('clone/<int:pk>', views.destination_home, name="destination_home"),
 ]
 
 if settings.DEBUG:
