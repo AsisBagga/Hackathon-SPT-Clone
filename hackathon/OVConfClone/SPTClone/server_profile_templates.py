@@ -39,19 +39,78 @@ config_Ov2 = {
 # Try load config from a file (if there is a config file)
 #config = try_load_from_file(config)
 oneview_client = OneViewClient(config_Ov1)
-oneview_client2 = OneViewClient(config_Ov2)
+#oneview_client2 = OneViewClient(config_Ov2)
 profile_templates = oneview_client.server_profile_templates
-profile_templates2 = oneview_client2.server_profile_templates
+#profile_templates2 = oneview_client2.server_profile_templates
 # Dependency resources
-
-hardware_types2 = oneview_client2.server_hardware_types
-enclosure_groups2 = oneview_client2.enclosure_groups
+#hardware_types = oneview_client.server_hardware_types
+#hardware_types2 = oneview_client2.server_hardware_types
+#enclosure_groups2 = oneview_client2.enclosure_groups
 
 # These variables must be defined according with your environment
-enclosure_group_name = "EG"
+#enclosure_group_name = "EG"
 
 #hardware_type = hardware_types.get_by_name(hardware_type_name)
-enclosure_group = enclosure_groups2.get_by_name(enclosure_group_name)
+#enclosure_group = enclosure_groups2.get_by_name(enclosure_group_name)
+
+print("\nGet a server profile templates by name 'spt_minimal' ")
+template = oneview_client.server_profile_templates.get_by_name("SPT-Con")
+#pprint(template.data)
+#connectionSettings
+template_data = dict()
+template_data['bios']= template.data['bios']
+template_data['boot']= template.data['boot'] 
+template_data['bootMode']= template.data['bootMode']
+template_data['name']= template.data['name']+"copy"
+template_data['serverHardwareTypeUri'] = template.data['serverHardwareTypeUri']
+template_data['enclosureGroupUri'] = template.data['enclosureGroupUri']
+
+#template_data['Length-connectionSettings']= len(template.data['connectionSettings']['connections'])
+network_list = []
+fc_networks=None
+ethernet_networks=None
+#Fetching all network Uris from source oneview
+for i in template.data['connectionSettings']['connections']:
+    if 'fc-network' in i['networkUri']:
+        # Creating FC Network in Destination OV one by one
+        if not fc_networks:
+            fc_networks = oneview_client.fc_networks
+        net = fc_networks.get_by_uri(i['networkUri']).data
+        options = {'fabricType': net['fabricType'], 
+                   'autoLoginRedistribution': net['autoLoginRedistribution'], 
+                   'linkStabilityTime': net['linkStabilityTime'],
+                   'managedSanUri': net['managedSanUri'],
+                   'name': net['name']+"copy",
+                   'connectionTemplateUri': None 
+                  }
+        new_fc = fc_networks.create(options)
+        # Creating list of all these newly created URIs
+        network_list.append(new_fc.data['uri'])
+        i['networkUri'] = new_fc.data['uri']
+    elif 'ethernet-network' in i['networkUri']:
+        if not ethernet_networks:
+            ethernet_networks = oneview_client.ethernet_networks
+        net = ethernet_networks.get_by_uri(i['networkUri']).data
+        # For now we dont have subnet URI
+        options = {
+                    'description': net['description'],
+                    'ethernetNetworkType': net['ethernetNetworkType'],
+                    #'ipv6SubnetUri': net['ethernetNetworkType'],
+                    'name': net['name']+"copy",
+                    'privateNetwork': net['privateNetwork'],
+                    'purpose': net['purpose'],
+                    'smartLink': net['smartLink'],
+                    'type': net['type'],
+                    'vlanId': net['vlanId']
+                  }
+        new_eth = ethernet_networks.create(options)
+        network_list.append(new_eth.data['uri'])
+        i['networkUri'] = new_eth.data['uri']
+pprint(network_list)
+template_data['connectionSettings'] = template.data['connectionSettings']
+templates = profile_templates.create(template_data)
+pprint(templates.data)
+
 '''
 # Get all
 print("\nGet list of all server profile templates")
@@ -88,6 +147,7 @@ available_networks = profile_templates.get_available_networks(enclosureGroupUri=
                                                               serverHardwareTypeUri=hardware_type.data["uri"])
 print(available_networks)
 '''
+'''
 # Get SPT by name
 print("\nGet a server profile templates by name 'spt_minimal' ")
 template = oneview_client.server_profile_templates.get_by_name("spt_minimal")
@@ -99,7 +159,6 @@ template_data['bootMode']= template.data['bootMode']
 template_data['name']= template.data['name']+"copy"
 
 # Getting Server Hardware Type URI
-hardware_types = oneview_client.server_hardware_types
 source_hardware_type_by_uri = hardware_types.get_by_uri(template.data['serverHardwareTypeUri'])
 source_capabilities_list = []
 for i in source_hardware_type_by_uri.data['adapters']:
@@ -151,7 +210,7 @@ print("Create a basic connection-less server profile template ")
 #)
 template = profile_templates2.create(template_data)
 pprint(template.data)
-
+'''
 '''
 # Update bootMode from recently created template
 print("\nUpdate bootMode from recently created template")

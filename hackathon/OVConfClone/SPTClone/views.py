@@ -19,7 +19,9 @@ from django.shortcuts import get_object_or_404
 '''
 1. system request the 1st Ov Config details 
 2. once successfully connected ask for the SPT name that it wants to clone 
-3. after getting all the details of the request SPT, system will show all the details and request for confirmation. 
+3. after getting all the details of the request SPT, system will show all the details, it will ask for confirmation to clone the network as well, 
+a. if user select yes, then it will clone the network while creating SPT 
+b. if user select no, then it will ignore the network
 4. system will request for 2nd OV Config details
 5. creates the SPT as completion. 
 '''
