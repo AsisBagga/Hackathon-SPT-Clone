@@ -12,6 +12,9 @@ from hpeOneView.exceptions import HPEOneViewException
 # Import Json Library
 import simplejson as json
 
+# Import Shortcuts
+from django.shortcuts import get_object_or_404
+
 # Story line
 '''
 1. system request the 1st Ov Config details 
@@ -81,4 +84,69 @@ def client_connect(form):
     return False
 
 def destination_home(request, pk):
-    return render(request, 'dest_home.html')
+    SPT_DB = get_object_or_404(Spt, pk=pk)
+    form  = ConfigForm()
+    if request.method == "POST":
+        form = ConfigForm(request.POST)
+        if form.is_valid():
+            temp = form.save(commit=False)
+            # get instance of the source OneView
+            oneview_client = client_connect(temp)
+            if oneview_client:
+                # Initializing resources
+                profile_templates = oneview_client.server_profile_templates
+                hardware_types = oneview_client.server_hardware_types
+                enclosure_groups = oneview_client.enclosure_groups
+                # Fetching Enclosure Group
+                enclosure_group = enclosure_groups.get_by_name("EG")
+                # Creating Json payload for cloning SP to destination OV
+                template_data = dict()
+                jsonDec = json.decoder.JSONDecoder()
+                SPT_data = jsonDec.decode(SPT_DB.spt_data)
+                template_data['bios'] = SPT_data.spt_data.bios
+                template_data['boot'] = SPT_data.spt_data.boot
+                template_data['bootMode'] = SPT_data.spt_data.bootMode
+                template_data['name'] = SPT_data.spt_data.name
+                # Extracting hardware types from destination OV
+                destination_hardware_types_all = hardware_types.get_all()
+                server_hardware_type_uri = find_hardware_type(destination_hardware_types_all, SPT_DB.source_server_hardware_model, SPT_DB.source_capabilities_list)
+                if server_hardware_type_uri:
+                    template_data['serverHardwareTypeUri'] =  server_hardware_type_uri
+                    # EG needs to be customizable, leaving aside for now
+                    template_data['enclosureGroupUri'] = enclosure_group.data['uri']
+                    template = profile_templates.create(template_data)
+                    return (request, 'dest_home.html', {'msg': 'Sever Profile Template Cloned Successfully', 'template': template})
+                else:
+                    return (request, 'dest_home.html', {'msg': 'Cloning Failed', 'template_fail': template})
+            else:
+                # if connection fails
+                return render(request, 'home.html', {'no_connection_response':f'OneView {temp.ip} is not reachable'})
+    return render(request, 'dest_home.html', {'form':form})
+
+#checks if minimum requirement is fullfilled or not
+def compare(destination_capabilities_list, source_capabilities_list):
+    for i in source_capabilities_list:
+        if i in destination_capabilities_list:
+            continue
+        else:
+            destination_capabilities_list = []
+            return False
+    return True
+
+# returns either the destination server hardware type uri which fulfils min requirements or False
+def find_hardware_type(destination_hardware_types_all, source_server_hardware_model, source_capabilities_list):
+    for dest_hardware_type in destination_hardware_types_all:
+        # Checks if destination model and source model matches
+        destination_capabilities_list = []
+        if dest_hardware_type['model'] == source_server_hardware_model:
+            # Fetching capabilities for this model
+            for adapter in dest_hardware_type['adapters']:
+                # Creating destination capability list for all adapter in this model
+                for capability in adapter['capabilities']:
+                    destination_capabilities_list.append(capability)
+            #checks if minimum requirement is fullfilled or not
+            result = compare(destination_capabilities_list, source_capabilities_list)
+            print(result)
+            if result:
+                return dest_hardware_type['uri']
+    return False
