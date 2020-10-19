@@ -19,23 +19,24 @@
         <h5 style="color:crimson">{{ no_connection_response }}</h5>
     </div>
     {% if msg %}
-    <h5>{{msg}}</h5>
-    <div class="container">
-        {% if template %}
-        <pre>{{ template | pprint }} </pre>
-        {% else %}
-        <pre>{{ template_fail | pprint }} </pre>
-    </div>
-	{% else %}
-         <div class="container" style="width: 40%; margin-top: 2%;">
+        <h5>{{msg}}</h5>
+        <div class="container">
+            {% if template %}
+	        <pre>{{ template | pprint }} </pre>
+            {% else %}
+	   	 <pre> {{ template_fail | pprint }} </pre>
+	    {% endif %}
+        </div>
+    {% else %}
+        <div class="container" style="width: 40%; margin-top: 2%;">
             <h4 style="text-align: center;">Please update the Destination OV Configuration</h4> <br>
             <form method="post">
-              {% csrf_token %}
-              {% bootstrap_form form %}
-              <button class="btn btn-info" style="width: 50%; align-items: center;" type="submit">Connect</button>
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                <button class="btn btn-info" style="width: 50%; align-items: center;" type="submit">Connect</button>
             </form>
         </div>
-	{% endif  %}
+    {% endif  %}
     <hr>
 
 </body>

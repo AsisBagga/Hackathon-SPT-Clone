@@ -20,10 +20,10 @@ from django.shortcuts import get_object_or_404
 1. system request the 1st Ov Config details 
 2. once successfully connected ask for the SPT name that it wants to clone 
 3. after getting all the details of the request SPT, system will show all the details and request for confirmation. 
-    User can either select for removal or leave confirm the status. 
 4. system will request for 2nd OV Config details
 5. creates the SPT as completion. 
 '''
+
 def get_spt(oneview_client, config):
     server_profile_name = config.source_SPT_name
     profile_templates = oneview_client.server_profile_templates
@@ -103,21 +103,22 @@ def destination_home(request, pk):
                 template_data = dict()
                 jsonDec = json.decoder.JSONDecoder()
                 SPT_data = jsonDec.decode(SPT_DB.spt_data)
-                template_data['bios'] = SPT_data.spt_data.bios
-                template_data['boot'] = SPT_data.spt_data.boot
-                template_data['bootMode'] = SPT_data.spt_data.bootMode
-                template_data['name'] = SPT_data.spt_data.name
+                pprint(SPT_data)
+                template_data['bios'] = SPT_data['spt_data']['bios']
+                template_data['boot'] = SPT_data['spt_data']['boot']
+                template_data['bootMode'] = SPT_data['spt_data']['bootMode']
+                template_data['name'] = SPT_data['spt_data']['name']
                 # Extracting hardware types from destination OV
                 destination_hardware_types_all = hardware_types.get_all()
-                server_hardware_type_uri = find_hardware_type(destination_hardware_types_all, SPT_DB.source_server_hardware_model, SPT_DB.source_capabilities_list)
+                server_hardware_type_uri = find_hardware_type(destination_hardware_types_all, SPT_data['source_server_hardware_model'], SPT_data['source_capabilities_list'])
                 if server_hardware_type_uri:
                     template_data['serverHardwareTypeUri'] =  server_hardware_type_uri
                     # EG needs to be customizable, leaving aside for now
                     template_data['enclosureGroupUri'] = enclosure_group.data['uri']
                     template = profile_templates.create(template_data)
-                    return (request, 'dest_home.html', {'msg': 'Sever Profile Template Cloned Successfully', 'template': template})
+                    return render(request, 'dest_home.html', {'msg': 'Sever Profile Template Cloned Successfully', 'template': template.data})
                 else:
-                    return (request, 'dest_home.html', {'msg': 'Cloning Failed', 'template_fail': template})
+                    return render(request, 'dest_home.html', {'msg': 'Cloning Failed', 'template_fail': template})
             else:
                 # if connection fails
                 return render(request, 'home.html', {'no_connection_response':f'OneView {temp.ip} is not reachable'})
